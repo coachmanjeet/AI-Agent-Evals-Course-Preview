@@ -24,7 +24,7 @@ You are the product manager for Pronto, a demo grocery delivery agent. Three tab
 | `resources/faq.md` | The questions students ask most |
 | `resources/links.md` | The tools and reading the course leans on |
 | `resources/flashcards/` | Five study decks: foundations, judges, data and error analysis, production, PM decisions |
-| `decks/week-02-llm-judges-live.pptx` | One full live session deck: Week 2, Designing Reliable LLM Judges |
+| `decks/week-01-eval-foundations-live.pdf` | One full live session deck: Week 1, Eval Foundations and Error Analysis (81 pages) |
 
 ## Preview vs full course
 
