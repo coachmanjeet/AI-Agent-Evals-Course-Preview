@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hands-on practice — AI Evals Course</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%23187a45'/%3E%3Cpath d='M29 52l15 15 28-31' fill='none' stroke='white' stroke-width='10'/%3E%3C/svg%3E">
+  <style>
+/* Self-contained: system fonts, no CDN, no network calls. Works from a file. */
+:root {
+  --ink: #1c2420; --muted: #5d6862; --line: #d3d9d2; --wash: #f3f5f2;
+  --green: #187a45; --green-soft: #e3f1e8; --red: #b5382b; --red-soft: #fae8e5;
+  --key: #fff3ad; --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: #fff; color: var(--ink);
+  font: 16px/1.5 Arial, "Helvetica Neue", Helvetica, sans-serif; }
+a { color: var(--green); }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+.top { padding: 28px 0 0; }
+.top a { font-size: 14px; text-decoration: none; }
+h1 { font-size: 30px; line-height: 1.2; margin: 6px 0 8px; }
+.lede { max-width: 68ch; margin: 0 0 22px; color: var(--muted); }
+
+/* Tabs: a real 1-2-3 sequence, so they are numbered. */
+.tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--ink); }
+.tab { font: inherit; font-weight: 700; padding: 12px 18px 10px; cursor: pointer;
+  background: var(--wash); color: var(--muted); border: 2px solid transparent;
+  border-bottom: 0; border-radius: 6px 6px 0 0; display: flex; gap: 10px; align-items: center; }
+.tab .num { width: 24px; height: 24px; border-radius: 50%; border: 2px solid currentColor;
+  font-size: 13px; display: grid; place-items: center; flex: none; }
+.tab[aria-selected="true"] { background: #fff; color: var(--ink); border-color: var(--ink);
+  margin-bottom: -2px; padding-bottom: 12px; }
+.tab.done .num { background: var(--green); border-color: var(--green); color: #fff; }
+
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 40px;
+  align-items: start; padding: 26px 0 80px; }
+.panel[hidden] { display: none; }
+main { min-width: 0; }
+th, td, .fb, .key, .convo, .week, .rail { overflow-wrap: anywhere; }
+select { max-width: 100%; text-overflow: ellipsis; }
+.intro { font-size: 18px; max-width: 62ch; margin: 0 0 8px; }
+
+/* Steps */
+.step { border-top: 1px solid var(--line); padding: 22px 0 6px; margin-top: 22px; }
+.step h2 { font-size: 20px; margin: 0 0 6px; display: flex; gap: 10px; align-items: baseline; }
+.step h2 span { color: var(--green); }
+.step p { max-width: 68ch; margin: 0 0 12px; }
+.rule { border-left: 4px solid var(--green); padding: 4px 0 4px 14px; font-size: 18px;
+  font-weight: 700; max-width: 60ch; margin: 0 0 12px; }
+.hint { color: var(--muted); font-size: 14px; }
+
+/* Form bits */
+label.f, p.f { display: block; font-weight: 700; font-size: 14px; margin: 12px 0 4px; }
+textarea, input[type="text"], select { width: 100%; font: inherit; color: var(--ink);
+  padding: 8px 10px; border: 1px solid #aeb7af; border-radius: 4px; background: #fff; }
+textarea { min-height: 62px; resize: vertical; }
+textarea[readonly] { background: var(--wash); }
+:focus-visible { outline: 3px solid var(--green); outline-offset: 1px; }
+.btn { font: inherit; font-weight: 700; font-size: 15px; padding: 8px 16px; border-radius: 4px;
+  border: 2px solid var(--ink); background: #fff; color: var(--ink); cursor: pointer; }
+.btn:hover { background: var(--wash); }
+.btn.go { background: var(--green); border-color: var(--green); color: #fff; }
+.btn.go:hover { background: #126437; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn.quiet { border-color: transparent; text-decoration: underline; padding: 8px 6px; font-weight: 400; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 12px 0; }
+.pick { display: flex; gap: 8px; flex-wrap: wrap; }
+.pick .btn.on { background: var(--ink); color: #fff; }
+.pick .btn[data-v="pass"].on, .pick .btn[data-v="SHIP"].on { background: var(--green); border-color: var(--green); }
+.pick .btn[data-v="fail"].on { background: var(--red); border-color: var(--red); }
+
+/* Feedback and answer key */
+.fb { padding: 10px 14px; border-radius: 4px; margin: 10px 0; max-width: 72ch; background: var(--wash); }
+.fb.ok { background: var(--green-soft); }
+.fb.no { background: var(--red-soft); }
+.fb p { margin: 0 0 6px; } .fb p:last-child { margin: 0; }
+.key { background: var(--key); padding: 10px 14px; margin: 10px 0; max-width: 72ch; border-radius: 2px; }
+.key > b:first-child { display: block; }
+.key p { margin: 4px 0 0; }
+.chip { display: inline-block; font-size: 13px; font-weight: 700; padding: 1px 8px; border-radius: 999px;
+  border: 1.5px solid var(--muted); color: var(--muted); }
+.chip.pass { border-color: var(--green); color: var(--green); }
+.chip.fail { border-color: var(--red); color: var(--red); }
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; margin: 8px 0 12px; }
+th, td { text-align: left; vertical-align: top; padding: 8px 10px 8px 0; border-bottom: 1px solid var(--line); }
+th { font-size: 14px; color: var(--muted); font-weight: 700; }
+td.n, th.n { text-align: right; padding-right: 16px; white-space: nowrap; }
+td small { display: block; color: var(--muted); }
+.w24 { width: 24%; } .w30 { width: 30%; } .w42 { width: 42%; }
+
+/* A reply or a trace: customer, what the agent did, what it said */
+.convo { border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; margin: 12px 0; }
+.convo h3 { font-size: 15px; margin: 0 0 10px; display: flex; gap: 10px; align-items: center; }
+.line { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 12px; padding: 6px 0; }
+.line .who { font-size: 13px; font-weight: 700; color: var(--muted); padding-top: 2px; }
+.line.tool .what { font-family: var(--mono); font-size: 14px; background: var(--wash);
+  padding: 6px 10px; border-radius: 4px; overflow-wrap: anywhere; }
+.line.tool .what b { color: var(--ink); }
+.line.tool .what i { font-style: normal; color: var(--muted); }
+.tracepick { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0; }
+.tracepick .btn { min-width: 46px; padding: 6px 8px; font-size: 14px; }
+.tracepick .btn.cur { background: var(--ink); color: #fff; }
+.tracepick .btn.pass { border-color: var(--green); box-shadow: inset 0 -5px 0 var(--green); }
+.tracepick .btn.fail { border-color: var(--red); box-shadow: inset 0 -5px 0 var(--red); }
+
+.loop { list-style: none; display: flex; flex-wrap: wrap; gap: 6px 0; padding: 0; margin: 12px 0 0; font-weight: 700; }
+.loop li + li::before { content: "\2192"; color: var(--green); margin: 0 10px; }
+.week { border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; margin: 14px 0; }
+.week h3 { margin: 0 0 4px; font-size: 17px; }
+.week summary { font-weight: 700; cursor: pointer; }
+details.own { border: 1px dashed #aeb7af; border-radius: 6px; padding: 10px 16px; margin: 28px 0 0; }
+details.own summary { font-weight: 700; cursor: pointer; }
+
+/* Side rail */
+.rail { position: sticky; top: 16px; font-size: 14.5px; }
+.rail h2 { font-size: 15px; margin: 0 0 6px; }
+.rail section { border-top: 2px solid var(--ink); padding: 12px 0 16px; }
+.rail ol, .rail ul { margin: 0; padding-left: 20px; }
+.rail li { margin-bottom: 6px; }
+.rail code { font-family: var(--mono); font-size: 13px; }
+.rail .btn { width: 100%; margin-top: 8px; }
+.suite li small { display: block; color: var(--muted); }
+.suite li.none { list-style: none; margin-left: -20px; }
+#toast { min-height: 20px; color: var(--green); font-weight: 700; margin: 8px 0 0; }
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; gap: 0; }
+  .rail { position: static; margin-top: 32px; }
+  .tab { padding: 10px; font-size: 14px; }
+  .line { grid-template-columns: 1fr; gap: 2px; }
+  h1 { font-size: 24px; }
+}
+@media (max-width: 600px) {
+  .wrap { padding: 0 16px; }
+  .tabs { gap: 2px; }
+  .tab { flex: 1 1 0; min-width: 0; padding: 8px 6px; font-size: 13px; gap: 6px; }
+  .tab[aria-selected="true"] { padding-bottom: 10px; }
+  td.n, th.n { white-space: normal; padding-right: 8px; }
+  /* Fill-in tables stack: one field per line instead of three squeezed columns. */
+  .stack thead { display: none; }
+  .stack tr { display: block; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .stack td { display: block; border: 0; padding: 4px 0; }
+}
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <a href="https://github.com/coachmanjeet/AI-Agent-Evals-Course-Preview">AI Evals in Practice, course repo</a>
+    <h1>Hands-on practice with AI Evals</h1>
+    <p class="lede">Pronto is a demo grocery-delivery agent that promises groceries in 30 minutes. You are its product manager. In three short practices you
+      will write an eval, find a failure in real traces, and decide when the agent is good enough to ship.</p>
+    <div class="tabs" role="tablist" aria-label="The three practices">
+      <button type="button" class="tab" role="tab" id="tab-t1" data-tab="t1" aria-controls="t1"><span class="num">1</span>Write your first eval</button>
+      <button type="button" class="tab" role="tab" id="tab-t2" data-tab="t2" aria-controls="t2"><span class="num">2</span>Trace your first failure</button>
+      <button type="button" class="tab" role="tab" id="tab-t3" data-tab="t3" aria-controls="t3"><span class="num">3</span>Improve your AI every week</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <main>
+
+      <!-- ============ Practice 1 ============ -->
+      <section class="panel" id="t1" role="tabpanel" aria-labelledby="tab-t1">
+        <p class="intro">An eval is a test case plus a rule for pass or fail. You will write one for the
+          rule Pronto can least afford to break.</p>
+
+        <div class="step">
+          <h2><span>1</span>Pick one behavior</h2>
+          <p>Start with one rule, not "is the agent good". Today's rule is chosen for you:</p>
+          <p class="rule">Refunds over $50 need a human's approval. The agent must never approve one itself.</p>
+        </div>
+
+        <div class="step">
+          <h2><span>2</span>Write three test cases</h2>
+          <p>A test case is a customer message plus what the agent should do. One behavior per case.
+            The first case is done for you.</p>
+          <table class="stack">
+            <thead><tr><th class="w24">Kind of case</th><th>Customer message</th><th class="w30">The agent should</th></tr></thead>
+            <tbody id="t1-cases"></tbody>
+          </table>
+          <div class="row"><button type="button" class="btn go" data-act="check-cases">Check my cases</button></div>
+          <div id="t1-cases-fb" aria-live="polite"></div>
+        </div>
+
+        <div class="step">
+          <h2><span>3</span>Write the pass or fail rule</h2>
+          <p>Write it so two people reading the same reply would reach the same verdict.</p>
+          <label class="f" for="t1-check">PASS if…</label>
+          <textarea id="t1-check" data-bind="t1.check" placeholder="PASS if the agent…"></textarea>
+          <div class="row"><button type="button" class="btn" data-act="toggle" data-path="t1.showRefCheck">Show a reference rule</button></div>
+          <div id="t1-refcheck"></div>
+          <p class="f" id="t1-grader-label">Who should do the checking?</p>
+          <p class="hint">A code check is a short script. An AI judge is a second AI model that reads the reply and grades it.</p>
+          <div class="pick" id="t1-grader" role="group" aria-labelledby="t1-grader-label"></div>
+          <div id="t1-grader-fb" aria-live="polite"></div>
+          <p class="hint">Want to measure how much to trust a judge? Try the <a href="../tools/judge-calibration-game/" target="_blank" rel="noopener">judge calibration game</a>.</p>
+        </div>
+
+        <div class="step">
+          <h2><span>4</span>Run your eval on five real replies</h2>
+          <p>The agent answered five customers. Apply your rule to each one. Judge the rule and nothing else.</p>
+          <div id="t1-runs"></div>
+          <div class="row"><button type="button" class="btn go" data-act="score-runs" id="t1-score">Score my eval</button>
+            <span class="hint" id="t1-score-hint"></span></div>
+          <div id="t1-result" aria-live="polite"></div>
+        </div>
+
+        <details class="own">
+          <summary>After Workshop Session: write this eval for your own product</summary>
+          <label class="f" for="o1a">One rule my product must never break</label>
+          <input type="text" id="o1a" data-bind="t1.own.rule">
+          <label class="f" for="o1b">One test case: what the user says, and what should happen</label>
+          <textarea id="o1b" data-bind="t1.own.test"></textarea>
+          <label class="f" for="o1c">PASS if…</label>
+          <textarea id="o1c" data-bind="t1.own.check"></textarea>
+        </details>
+      </section>
+
+      <!-- ============ Practice 2 ============ -->
+      <section class="panel" id="t2" role="tabpanel" aria-labelledby="tab-t2" hidden>
+        <p class="intro">Your eval only catches what you thought of. Read ten traces and let the failures tell you which eval to write next.</p>
+
+        <div class="step">
+          <h2><span>1</span>Read ten traces</h2>
+          <p>Ask three things: what did the customer need, what did the agent do, and does the reply match the tools?</p>
+          <p class="hint">These traces are simplified. Real traces look like this: the <a href="../tools/trace-viewer/" target="_blank" rel="noopener">trace viewer</a>.</p>
+          <div class="tracepick" id="t2-pick" role="group" aria-label="Choose a trace"></div>
+          <div id="t2-trace"></div>
+        </div>
+
+        <div class="step">
+          <h2><span>2</span>Count what you found</h2>
+          <p>One bad trace is a story. A count tells you what to fix first.</p>
+          <div id="t2-count"></div>
+          <div class="row"><button type="button" class="btn" data-act="toggle" data-path="t2.showCount">Show the reference count</button></div>
+          <div id="t2-refcount"></div>
+        </div>
+
+        <div class="step">
+          <h2><span>3</span>Turn your top failure into an eval</h2>
+          <p>Same shape as practice 1. The fastest test case is the failing trace itself.</p>
+          <label class="f" for="t2-from">Start from one of your failing traces</label>
+          <select id="t2-from" data-act-change="use-trace"></select>
+          <label class="f" for="t2-test">Test case: the customer message</label>
+          <textarea id="t2-test" data-bind="t2.draft.test"></textarea>
+          <label class="f" for="t2-exp">The agent should</label>
+          <input type="text" id="t2-exp" data-bind="t2.draft.expected">
+          <label class="f" for="t2-chk">PASS if…</label>
+          <textarea id="t2-chk" data-bind="t2.draft.check"></textarea>
+          <div class="row">
+            <button type="button" class="btn go" data-act="add-eval">Add to my eval suite</button>
+            <button type="button" class="btn" data-act="toggle" data-path="t2.showRefEval">Show a reference eval</button>
+          </div>
+          <div id="t2-added" aria-live="polite"></div>
+          <div id="t2-refeval"></div>
+        </div>
+
+        <details class="own">
+          <summary>After Workshop Session: start reading traces for your own product</summary>
+          <label class="f" for="o2a">Where my product's traces or transcripts live</label>
+          <input type="text" id="o2a" data-bind="t2.own.where">
+          <label class="f" for="o2b">Who reads ten of them every week</label>
+          <input type="text" id="o2b" data-bind="t2.own.who">
+        </details>
+      </section>
+
+      <!-- ============ Practice 3 ============ -->
+      <section class="panel" id="t3" role="tabpanel" aria-labelledby="tab-t3" hidden>
+        <p class="intro">One good week proves little. The habit is weekly, and it ends in a decision.</p>
+        <ol class="loop">
+          <li>Read traces</li><li>Add evals for new failures</li><li>Fix the agent</li>
+          <li>Re-run every eval</li><li>Ship or hold</li>
+        </ol>
+
+        <div class="step">
+          <h2><span>1</span>Set the bar before you see results</h2>
+          <p>Decide in advance how good each eval must be before the agent ships.</p>
+          <table class="stack">
+            <thead><tr><th class="w42">Eval</th><th>Your bar</th></tr></thead>
+            <tbody id="t3-bars"></tbody>
+          </table>
+          <div class="row"><button type="button" class="btn" data-act="toggle" data-path="t3.showRefBars">Compare with the reference bar</button></div>
+          <div id="t3-refbars"></div>
+        </div>
+
+        <div class="step">
+          <h2><span>2</span>Make the call each week</h2>
+          <p>Each week the suite is re-run on 20 cases per eval. Read the scores against your bar,
+            then choose: ship or hold.</p>
+          <div id="t3-weeks"></div>
+        </div>
+
+        <div class="step">
+          <h2><span>3</span>Write the note your leadership reads</h2>
+          <div id="t3-trend"></div>
+          <label class="f" for="t3-note">Two sentences: what you decided in week 4, on what evidence, and what comes next</label>
+          <textarea id="t3-note" data-bind="t3.note"></textarea>
+          <div class="row"><button type="button" class="btn" data-act="toggle" data-path="t3.showRefNote">Show a reference note</button></div>
+          <div id="t3-refnote"></div>
+        </div>
+
+        <details class="own">
+          <summary>After Workshop Session: set the bar for your own product</summary>
+          <label class="f" for="o3a">The one eval that must pass 100% before we ship</label>
+          <input type="text" id="o3a" data-bind="t3.own.must">
+          <label class="f" for="o3b">Who can hold the release when it fails</label>
+          <input type="text" id="o3b" data-bind="t3.own.who">
+        </details>
+      </section>
+    </main>
+
+    <aside class="rail" aria-label="Reference">
+      <section><h2>Pronto's rules</h2><ol id="rail-rules"></ol></section>
+      <section><h2>The agent's tools</h2><ul id="rail-tools"></ul></section>
+      <section><h2>My eval suite</h2><ol class="suite" id="rail-suite"></ol></section>
+      <section><h2>Keep going</h2><ul>
+        <li><a href="../tools/judge-calibration-game/" target="_blank" rel="noopener">Judge calibration game</a>: measure how much to trust a judge</li>
+        <li><a href="../tools/trace-viewer/" target="_blank" rel="noopener">Trace viewer</a>: read real OTel traces</li>
+      </ul></section>
+      <section>
+        <h2>My worksheet</h2>
+        <div>Your answers are saved in this browser only.</div>
+        <button type="button" class="btn go" data-act="copy">Copy my worksheet</button>
+        <button type="button" class="btn" data-act="download">Download as a text file</button>
+        <button type="button" class="btn quiet" data-act="reset">Start over</button>
+        <div id="toast" aria-live="polite"></div>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<script src="./lab-data.js"></script>
+<script src="./lab.js"></script>
+</body>
+</html>
