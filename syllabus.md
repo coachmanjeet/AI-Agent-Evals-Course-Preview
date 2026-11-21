@@ -2,7 +2,7 @@
 
 **Instructor:** Manjeet Singh · **Format:** 6 live sessions on ByteByteGo, plus office hours · **Full course:** https://live.bytebytego.com/courses/ai-evals
 
-This is the syllabus for the full course. This repo is the free preview: it contains the syllabus, one complete hands-on lab, two browser tools, flashcards, one live deck, and student feedback. The assignments, worked solutions, and datasets below belong to the full course.
+This is the syllabus for the full course. This repo is the free preview: it contains the syllabus, one complete hands-on lab, two browser tools, flashcards, and one live deck. The assignments, worked solutions, and datasets below belong to the full course.
 
 ## The 6 weeks
 
