@@ -14,8 +14,8 @@ confidence interval on it.
 ## Run locally
 
 ```bash
-cd docs && python3 -m http.server 8000
-# open: http://localhost:8000/judge-calibration-game/
+python3 -m http.server 8000  # from the repo root
+# open: http://localhost:8000/tools/judge-calibration-game/
 ```
 
 ## Test mode (no API key needed)
@@ -24,7 +24,7 @@ Append `?mock=1` to run the entire flow — setup, labeling, judge run, metrics,
 gold check, export — against a deterministic simulated judge:
 
 ```
-http://localhost:8000/judge-calibration-game/?mock=1
+http://localhost:8000/tools/judge-calibration-game/?mock=1
 ```
 
 ## With a real key

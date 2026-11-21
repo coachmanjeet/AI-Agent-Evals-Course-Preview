@@ -9,8 +9,8 @@ eval dataset you build next.
 ## Run locally
 
 ```bash
-cd docs && python3 -m http.server 8000
-# open: http://localhost:8000/trace-viewer/
+python3 -m http.server 8000  # from the repo root
+# open: http://localhost:8000/tools/trace-viewer/
 ```
 
 Click **Load the Pronto sample** (or open the sample directly) to try it with
