@@ -4,7 +4,7 @@ Learn to build evaluation frameworks you can trust, then use them to ship AI pro
 
 **Instructor:** Manjeet Singh · **Full course:** [AI Evals in Practice](https://live.bytebytego.com/courses/ai-evals) (ByteByteGo Live, 6 live sessions)
 
-This repo is the free preview of the paid course. It gives you a real taste, not a brochure: one complete hands-on lab, two browser tools, the full syllabus, study flashcards, one live session deck, and student feedback. The full course adds the rest: 12 assignments, worked solutions, datasets, and the live sessions themselves.
+This repo is the free preview of the paid course. It gives you a real taste, not a brochure: one complete hands-on lab, two browser tools, the full syllabus, study flashcards, and one live session deck. The full course adds the rest: 12 assignments, worked solutions, datasets, and the live sessions themselves.
 
 ## Try it now, no setup
 
@@ -25,7 +25,6 @@ You are the product manager for Pronto, a demo grocery delivery agent. Three tab
 | `resources/links.md` | The tools and reading the course leans on |
 | `resources/flashcards/` | Five study decks: foundations, judges, data and error analysis, production, PM decisions |
 | `decks/week-02-llm-judges-live.pptx` | One full live session deck: Week 2, Designing Reliable LLM Judges |
-| `testimonials/` | What students said after taking the course |
 
 ## Preview vs full course
 
