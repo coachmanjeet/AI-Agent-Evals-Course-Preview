@@ -7,7 +7,7 @@ prompt and measure how well your judge agrees with your own labels
 shows where *your* labels disagreed with the answer key — label quality matters.
 
 Wondering how much to trust those metrics once the judge scores unlabeled
-data? `week-02-designing-reliable-llm-judges/assignments/01-build-and-validate-judge/judge_stats.py`
+data? In the full course, `week-02-designing-reliable-llm-judges/assignments/01-build-and-validate-judge/judge_stats.py`
 bias-corrects the judge's pass rate from your hand labels and puts a 95%
 confidence interval on it.
 
@@ -37,11 +37,10 @@ path is unaffected.) You can also bring an Anthropic key instead. Keys stay in
 your browser's localStorage and are sent only to the provider's API — there is
 no backend.
 
-## Live URL (once Pages is enabled)
+## Live URL
 
 `https://coachmanjeet.github.io/AI-Agent-Evals-Course-Preview/tools/judge-calibration-game/`
 
-To enable: repo Settings → Pages → Deploy from a branch → `main` → `/docs`.
 
 ## Files
 

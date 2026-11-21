@@ -17,11 +17,10 @@ Click **Load the Pronto sample** (or open the sample directly) to try it with
 no setup: 6 Pronto support-agent traces covering 5 failure modes plus one clean
 trace.
 
-## Live URL (once Pages is enabled)
+## Live URL
 
 `https://coachmanjeet.github.io/AI-Agent-Evals-Course-Preview/tools/trace-viewer/`
 
-To enable: repo Settings → Pages → Deploy from a branch → `main` → `/docs`.
 
 ## What it accepts
 

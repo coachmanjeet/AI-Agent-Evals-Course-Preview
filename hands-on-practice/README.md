@@ -4,7 +4,7 @@ One page, three tabs, one story: you are the product manager for the Pronto
 support agent. Built for a live class of product managers. Nothing to
 install, no keys, no account.
 
-**Live URL (once merged):**
+**Live URL:**
 `https://coachmanjeet.github.io/AI-Agent-Evals-Course-Preview/hands-on-practice/`
 
 ## What students do
