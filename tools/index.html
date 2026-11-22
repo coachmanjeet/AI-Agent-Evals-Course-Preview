@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tools — AI Evals in Practice</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: #101821; background: #ffffff; margin: 0; padding: 0 20px 60px;
+  }
+  main { max-width: 860px; margin: 0 auto; }
+  h1 { font-size: 40px; margin: 48px 0 8px; letter-spacing: -0.5px; }
+  .lede { font-size: 17px; color: #4F5C6E; margin: 0 0 28px; }
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
+  .chip {
+    border: 1px solid #B2C0D6; background: #fff; color: #101821;
+    border-radius: 999px; padding: 7px 14px; font-size: 14px; cursor: pointer;
+  }
+  .chip[aria-pressed="true"] { background: #101821; color: #fff; border-color: #101821; }
+  #search {
+    width: 100%; padding: 10px 12px; font-size: 15px;
+    border: 1px solid #B2C0D6; border-radius: 6px; margin: 0 0 8px;
+  }
+  #count { font-size: 13px; color: #4F5C6E; margin: 0 0 28px; }
+  h2.section {
+    font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: #8a6d1b; border-bottom: 1px solid #e3e6ea;
+    padding-bottom: 8px; margin: 36px 0 0;
+  }
+  .tool {
+    display: flex; gap: 16px; padding: 18px 0;
+    border-bottom: 1px solid #e3e6ea;
+  }
+  .num { color: #4F5C6E; font-size: 14px; width: 28px; flex: none; padding-top: 2px; }
+  .body { flex: 1; min-width: 0; }
+  .situation { font-size: 17px; font-weight: 700; margin: 0 0 4px; }
+  .desc { font-size: 15px; color: #4F5C6E; margin: 0 0 8px; }
+  .desc a { color: #0B6675; }
+  .meta { font-size: 13px; color: #4F5C6E; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .tag {
+    border: 1px solid #B2C0D6; border-radius: 999px; padding: 2px 9px;
+    font-size: 12px; color: #4F5C6E; white-space: nowrap;
+  }
+  .tag.planned { border-color: #A0382F; color: #A0382F; }
+  .tool.planned { opacity: 0.85; }
+  .hidden { display: none; }
+  footer { margin-top: 40px; font-size: 14px; color: #4F5C6E; line-height: 1.6; }
+  footer a { color: #0B6675; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Tools</h1>
+  <p class="lede">Every tool in the course, in one place. Listed in the order the work comes up across a feature&rsquo;s life. Pick your role to filter. Three tools are free here: the Trace Viewer, the Judge Calibration Game, and the hands-on lab. The rest are in the full course.</p>
+
+  <div class="filters" role="group" aria-label="Filter by role">
+    <button class="chip" data-role="all" aria-pressed="true">All</button>
+    <button class="chip" data-role="pm" aria-pressed="false">AI PM</button>
+    <button class="chip" data-role="engineer" aria-pressed="false">AI Engineer</button>
+    <button class="chip" data-role="dsr" aria-pressed="false">Data Science and Research</button>
+  </div>
+  <input id="search" type="search" placeholder="Search tools by situation, name, or description" aria-label="Search tools">
+  <p id="count"></p>
+
+  <h2 class="section" data-section>Setting up evals</h2>
+
+  <div class="tool" data-roles="all pm engineer dsr" data-text="evals-start router describe your situation right skill anytime">
+    <div class="num">01</div>
+    <div class="body">
+      <p class="situation">You know the situation, not the tool.</p>
+      <p class="desc"><a href="../syllabus.md">evals-start</a> &mdash; describe your situation and it routes you to the right skill.</p>
+      <p class="meta"><span class="tag">Skill</span><span class="tag">Full course</span><span>Anytime</span><span>AI PM</span><span>AI Engineer</span><span>Data Science and Research</span></p>
+    </div>
+  </div>
+
+  <div class="tool" data-roles="all pm engineer dsr" data-text="evals playbook spine whole course">
+    <div class="num">02</div>
+    <div class="body">
+      <p class="situation">You need one spine for the whole course, not a pile of docs.</p>
+      <p class="desc"><a href="../syllabus.md">Evals playbook</a> &mdash; the course&rsquo;s spine: how evals, judges, and the ship-or-hold call fit together.</p>
+      <p class="meta"><span class="tag">Guide</span><span class="tag">Full course</span><span>All weeks</span><span>AI PM</span><span>AI Engineer</span><span>Data Science and Research</span></p>
+    </div>
+  </div>
+
+  <div class="tool" data-roles="pm" data-text="eval plan template new feature no plan how to test it">
+    <div class="num">03</div>
+    <div class="body">
+      <p class="situation">A new feature, and no plan for how to test it.</p>
+      <p class="desc"><a href="../syllabus.md">Eval plan template</a> &mdash; how much evaluation does this feature need, and what does it cover?</p>
+      <p class="meta"><span class="tag">Template</span><span class="tag">Full course</span><span>Week 1</span><span>AI PM</span></p>
+    </div>
+  </div>
+
+  <div class="tool" data-roles="pm" data-text="ai prd template nobody wrote down what good looks like">
+    <div class="num">04</div>
+    <div class="body">
+      <p class="situation">Nobody wrote down what good looks like.</p>
+      <p class="desc"><a href="../syllabus.md">AI PRD template</a> &mdash; write down what good looks like before you build the eval.</p>
+      <p class="meta"><span class="tag">Template</span><span class="tag">Full course</span><span>Week 1</span><span>AI PM</span></p>
+    </div>
+  </div>
+
+  <div class="tool" data-roles="pm" data-text="sample ai prd pronto finished prd before writing one">
+    <div class="num">05</div>
+    <div class="body">
+      <p class="situation">You want to see a finished PRD before writing one.</p>
+      <p class="desc"><a href="../syllabus.md">Sample AI PRD (Pronto)</a> &mdash; the Pronto support agent&rsquo;s PRD, the worked example for the template.</p>
+      <p class="meta"><span class="tag">Template</span><span class="tag">Full course</span><span>Week 1</span><span>AI PM</span></p>
+    </div>
+  </div>
+
+  <div class="tool" data-roles="dsr" data-text="decode session plan evals with a pm 90 minute ritual">
+    <div class="num">06</div>
+    <div class="body">
+      <p class="situation">A PM and an engineer need to plan evals together.</p>
+      <p class="desc"><a href="../syllabus.md">Decode session</a> &mdash; a 90-minute ritual for planning evals with a PM.</p>
+      <p class="meta"><span class="tag">Guide</span><span class="tag">Full course</span><span>Weeks 1&ndash;2</span><span>Data Science and Research</span></p>
+    </div>
+  </div>
+
+  <div class="tool" data-roles="all pm engineer dsr" data-text="trace viewer traces read annotate failures browser">
+    <div class="num">07</div>
+    <div class="body">
+      <p class="situation">Traces exist, but no one has read them yet.</p>
+      <p class="desc"><a href="trace-viewer/">Trace Viewer</a> &mdash; explore OTel traces and annotate failures in your browser. No setup, no keys.</p>
+      <p class="meta"><span class="tag">Browser tool</span><span>Week 1</span><span>AI PM</span><span>AI Engineer</span><span>Data Science and Research</span></p>
+    </div>
+  </div>
+
+  <div class="tool" data-roles="engineer" data-text="error-discovery failure patterns traces review app samples">
+    <div class="num">08</div>
+    <div class="body">
+      <p class="situation">Failures are piling up, but no one knows the patterns.</p>
+      <p class="desc"><a href="../syllabus.md">error-discovery</a> &mdash; builds a review app, picks diverse samples, organizes your notes into failure modes.</p>
+      <p class="meta"><span class="tag">Skill</span><span class="tag">Full course</span><span>Week 1</span><span>AI Engineer</span></p>
+    </div>
+  </div>
+
+  <div class="tool" data-roles="engineer" data-text="build-review-interface annotation interface human labels traces">
+    <div class="num">09</div>
+    <div class="body">
+      <p class="situation">You need to collect human labels, and no tool fits your data.</p>
+      <p class="desc"><a href="../syllabus.md">build-review-interface</a> &mdash; builds a browser annotation interface tailored to your data for reviewing traces and collecting labels.</p>
+      <p class="meta"><span class="tag">Skill</span><span class="tag">Full course</span><span>Week 1</span><span>AI Engineer</span></p>
+    </div>
+  </div>
+
+  <div class="tool" data-roles="engineer dsr" data-text="pronto support tickets real failures learn from 24 tickets 14 failure modes">
+    <div class="num">10</div>
+    <div class="body">
+      <p class="situation">You need real failures to learn from.</p>
+      <p class="desc"><a href="../syllabus.md">Pronto support tickets</a> &mdash; 24 tickets, 14 failure modes. The raw material for error analysis.</p>
+      <p class="meta"><span class="tag">Dataset</span><span class="tag">Full course</span><span>Week 1</span><span>AI Engineer</span><span>Data Science and Research</span></p>
+    </div>
+  </div>
+
+  <div class="tool" data-roles="engineer dsr" data-text="pronto gold set labeled grade against 48 rows">
+    <div class="num">11</div>
+    <div class="body">
+      <p class="situation">You need a labeled set to grade against.</p>
+      <p class="desc"><a href="../syllabus.md">Pronto gold set</a> &mdash; 48 rows: 29 clean cases, 19 failures, 4 of them adversarial.</p>
+      <p class="meta"><span class="tag">Dataset</span><span class="tag">Full course</span><span>Week 1</span><span>AI Engineer</span><span>Data Science and Research</span></p>
+    </div>
+  </div>
+
+  <div class="tool" data-roles="engineer dsr" data-text="pronto regression set fix break yesterday passes 12 rows">
+    <div class="num">12</div>
+    <div class="body">
+      <p class="situation">You need to know a fix did not break yesterday&rsquo;s passes.</p>
+      <p class="desc"><a href="../syllabus.md">Pronto regression set</a> &mdash; 12 rows that must keep passing after every change.</p>
+      <p class="meta"><span class="tag">Dataset</span><span class="tag">Full course</span><span>Week 1</span><span>AI Engineer</span><span>Data Science and Research</span></p>
+    </div>
+  </div>
+
+  <div class="tool" data-roles="pm dsr" data-text="golden-set blueprints eight task families starter rows coverage">
+    <div class="num">13</div>
+    <div class="body">
+      <p class="situation">One golden set is not enough for a new task family.</p>
+      <p class="desc"><a href="../syllabus.md">Golden-set blueprints</a> &mdash; starting templates for eight task families, each with case families, oracles, slices, and starter rows.</p>
+      <p class="meta"><span class="tag">Blueprints</span><span class="tag">Full course</span><span>Weeks 1&ndash;6</span><span>AI PM</span><span>Data Science and Research</span></p>
+    </div>
+  </div>
+
+  <div class="tool" data-roles="engineer" data-text="write-code-eval code checks objective failure modes before llm judge">
+    <div class="num">14</div>
+    <div class="body">
+      <p class="situation">A failure mode is objective, so code should catch it.</p>
+      <p class="desc"><a href="../syllabus.md">write-code-eval</a> &mdash; code checks for objective failure modes. Always try these before reaching for an LLM judge.</p>
+      <p class="meta"><span class="tag">Skill</span><span class="tag">Full course</span><span>Weeks 1&ndash;2</span><span>AI Engineer</span></p>
+    </div>
+  </div>
+
+  <div class="tool" data-roles="engineer" data-text="braintrust traces judges home not spreadsheet">
+    <div class="num">15</div>
+    <div class="body">
+      <p class="situation">Traces and judges need a home that is not a spreadsheet.</p>
+      <p class="desc"><a href="../syllabus.md">Braintrust in this course</a> &mdash; where traces live, where judges run, and how to read the results.</p>
+      <p class="meta"><span class="tag">Guide</span><span class="tag">Full course</span><span>Weeks 1&ndash;2</span><span>AI Engineer</span></p>
+    </div>
+  </div>
+
+  <div class="tool" data-roles="all pm engineer dsr" data-text="judge calibration game judge human labels pronto responses xp">
+    <div class="num">16</div>
+    <div class="body">
+      <p class="situation">A judge exists, but no one has checked it against human labels.</p>
+      <p class="desc"><a href="judge-calibration-game/">Judge Calibration Game</a> &mdash; label 24 Pronto responses, then score your judge against your labels. No keys in mock mode.</p>
+      <p class="meta"><span class="tag">Browser tool</span><span>Week 2</span><span>AI PM</span><span>AI Engineer</span><span>Data Science and Research</span></p>
+    </div>
+  </div>
+
+  <div class="tool" data-roles="engineer" data-text="hands-on practice lab read about evals not run one first eval trace failure ship-or-hold">
+    <div class="num">17</div>
+    <div class="body">
+      <p class="situation">You have read about evals, but you have not run one.</p>
+      <p class="desc"><a href="../hands-on-practice/">Hands-on Practice Lab</a> &mdash; one page, three short practices: write your first eval, trace your first failure, make the weekly ship-or-hold call.</p>
+      <p class="meta"><span class="tag">Browser tool</span><span>Weeks 1&ndash;2</span><span>AI Engineer</span></p>
+    </div>
+  </div>
+
+  <div class="tool" data-roles="engineer" data-text="write-judge-prompt failure mode needs a judge binary pass fail">
+    <div class="num">18</div>
+    <div class="body">
+      <p class="situation">A failure mode needs a judge.</p>
+      <p class="desc"><a href="../syllabus.md">write-judge-prompt</a> &mdash; designs binary pass/fail LLM judges, one failure mode per judge.</p>
+      <p class="meta"><span class="tag">Skill</span><span class="tag">Full course</span><span>Week 2</span><span>AI Engineer</span></p>
+    </div>
+  </div>
+
+  <div class="tool" data-roles="engineer" data-text="eval rubric template judge rubric anchors mean something">
+    <div class="num">19</div>
+    <div class="body">
+      <p class="situation">A judge needs a rubric with anchors that mean something.</p>
+      <p class="desc"><a href="../syllabus.md">Eval rubric template</a> &mdash; the rubric shape every judge in the course follows.</p>
+      <p class="meta"><span class="tag">Template</span><span class="tag">Full course</span><span>Week 2</span><span>AI Engineer</span></p>
+    </div>
+  </div>
+
+  <div class="tool" data-roles="engineer" data-text="validate-evaluator judge written but is it right calibrate human labels">
+    <div class="num">20</div>
+    <div class="body">
+      <p class="situation">A judge is written, but is it right?</p>
+      <p class="desc"><a href="../syllabus.md">validate-evaluator</a> &mdash; calibrates your judge against human labels. Uncalibrated judges are the silent killer.</p>
+      <p class="meta"><span class="tag">Skill</span><span class="tag">Full course</span><span>Week 2</span><span>AI Engineer</span></p>
+    </div>
+  </div>
+
+  <div class="tool" data-roles="engineer" data-text="human evals guide humans grade grading hold up">
+    <div class="num">21</div>
+    <div class="body">
+      <p class="situation">You need humans to grade, and the grading needs to hold up.</p>
+      <p class="desc"><a href="../syllabus.md">Human evals guide</a> &mdash; how to run human grading so the labels are worth calibrating against.</p>
+      <p class="meta"><span class="tag">Guide</span><span class="tag">Full course</span><span>Week 2</span><span>AI Engineer</span></p>
+    </div>
+  </div>
+
+  <div class="tool planned" data-roles="all pm engineer dsr" data-text="eval statistics calculators number ready to quote wilson clopper-pearson mcnemar sample size power pass reliability">
+    <div class="num">22</div>
+    <div class="body">
+      <p class="situation">A number exists, but is it ready to quote?</p>
+      <p class="desc">Eval statistics calculators &mdash; Wilson and Clopper-Pearson intervals, McNemar paired test, sample-size and power, pass-to-the-k estimator. Static pages, no keys.</p>
+      <p class="meta"><span class="tag planned">Planned</span><span>Weeks 2, 4</span><span>AI PM</span><span>AI Engineer</span><span>Data Science and Research</span></p>
+    </div>
+  </div>
+
+  <div class="tool" data-roles="engineer" data-text="uig user input grid dataset coverage gaps synthetic query matrix">
+    <div class="num">23</div>
+    <div class="body">
+      <p class="situation">The dataset might have coverage gaps.</p>
+      <p class="desc"><a href="../syllabus.md">uig</a> &mdash; builds a User Input Grid to audit dataset coverage and find the gaps.</p>
+      <p class="meta"><span class="tag">Skill</span><span class="tag">Full course</span><span>Week 3</span><span>AI Engineer</span></p>
+    </div>
+  </div>
+
+  <div class="tool" data-roles="engineer" data-text="evaluate-rag rag answer wrong retrieval or generation">
+    <div class="num">24</div>
+    <div class="body">
+      <p class="situation">The RAG answer is wrong, but is it retrieval or generation?</p>
+      <p class="desc"><a href="../syllabus.md">evaluate-rag</a> &mdash; retrieval versus generation scoring for the RAG week.</p>
+      <p class="meta"><span class="tag">Skill</span><span class="tag">Full course</span><span>Week 4</span><span>AI Engineer</span></p>
+    </div>
+  </div>
+
+  <div class="tool" data-roles="engineer" data-text="generate-synthetic-data coverage gaps real world synthetic input generation">
+    <div class="num">25</div>
+    <div class="body">
+      <p class="situation">Coverage has gaps the real world has not given you.</p>
+      <p class="desc"><a href="../syllabus.md">generate-synthetic-data</a> &mdash; dimension-based synthetic input generation. Use it when you need coverage; use ticket-to-eval when production hands you real failures.</p>
+      <p class="meta"><span class="tag">Skill</span><span class="tag">Full course</span><span>Week 4</span><span>AI Engineer</span></p>
+    </div>
+  </div>
+
+  <h2 class="section" data-section>In production</h2>
+
+  <div class="tool" data-roles="engineer" data-text="ticket-to-eval one real ticket become a test regression coverage row">
+    <div class="num">26</div>
+    <div class="body">
+      <p class="situation">One real ticket should become a test.</p>
+      <p class="desc"><a href="../syllabus.md">ticket-to-eval</a> &mdash; turns one Pronto ticket into two dataset rows: a regression row and a generalized coverage row. Strips PII first.</p>
+      <p class="meta"><span class="tag">Skill</span><span class="tag">Full course</span><span>Weeks 1, 4, 6</span><span>AI Engineer</span></p>
+    </div>
+  </div>
+
+  <div class="tool" data-roles="all pm engineer dsr" data-text="eval-audit eval pipeline exists what is broken second opinion production harness">
+    <div class="num">27</div>
+    <div class="body">
+      <p class="situation">An eval pipeline exists, but what is broken in it?</p>
+      <p class="desc"><a href="../syllabus.md">eval-audit</a> &mdash; audits an existing eval pipeline and prioritizes what is broken. A second opinion on your production harness.</p>
+      <p class="meta"><span class="tag">Skill</span><span class="tag">Full course</span><span>Week 6</span><span>AI PM</span><span>AI Engineer</span><span>Data Science and Research</span></p>
+    </div>
+  </div>
+
+  <div class="tool" data-roles="dsr" data-text="experiment pre-registration decision rule locked before see data">
+    <div class="num">28</div>
+    <div class="body">
+      <p class="situation">The decision rule should be locked before you see the data.</p>
+      <p class="desc"><a href="../syllabus.md">Experiment pre-registration</a> &mdash; lock the decision rule before you see the data.</p>
+      <p class="meta"><span class="tag">Guide</span><span class="tag">Full course</span><span>Week 6</span><span>Data Science and Research</span></p>
+    </div>
+  </div>
+
+  <div class="tool" data-roles="dsr" data-text="eval debt register quarterly audit eval program health">
+    <div class="num">29</div>
+    <div class="body">
+      <p class="situation">The eval program needs a quarterly health audit.</p>
+      <p class="desc"><a href="../syllabus.md">Eval debt register</a> &mdash; a quarterly audit of your eval program&rsquo;s health.</p>
+      <p class="meta"><span class="tag">Guide</span><span class="tag">Full course</span><span>Week 6</span><span>Data Science and Research</span></p>
+    </div>
+  </div>
+
+  <div class="tool" data-roles="dsr" data-text="eval contracts organize evals contracts kappa gated deployment">
+    <div class="num">30</div>
+    <div class="body">
+      <p class="situation">Evals should be contracts with a deployment gate.</p>
+      <p class="desc"><a href="../syllabus.md">Eval contracts</a> &mdash; organize evals as contracts with kappa-gated deployment.</p>
+      <p class="meta"><span class="tag">Guide</span><span class="tag">Full course</span><span>Week 6</span><span>Data Science and Research</span></p>
+    </div>
+  </div>
+
+  <div class="tool" data-roles="dsr" data-text="cross-modal-consistency agent reads photo writes text agree claim by claim">
+    <div class="num">31</div>
+    <div class="body">
+      <p class="situation">The agent reads a photo and writes text, and the two should agree.</p>
+      <p class="desc"><a href="../syllabus.md">Cross-modal consistency</a> &mdash; check outputs against each other, claim by claim.</p>
+      <p class="meta"><span class="tag">Guide</span><span class="tag">Full course</span><span>New capability</span><span>Data Science and Research</span></p>
+    </div>
+  </div>
+
+  <div class="tool" data-roles="dsr" data-text="ingestion fidelity agent actually saw heard input right">
+    <div class="num">32</div>
+    <div class="body">
+      <p class="situation">Did the agent actually see the input right?</p>
+      <p class="desc"><a href="../syllabus.md">Ingestion fidelity</a> &mdash; grade whether the agent actually saw or heard the input right.</p>
+      <p class="meta"><span class="tag">Guide</span><span class="tag">Full course</span><span>New capability</span><span>Data Science and Research</span></p>
+    </div>
+  </div>
+
+  <div class="tool planned" data-roles="pm engineer" data-text="production kit capstone ship-or-hold call evidence run card evaluation card release gate change impact monitoring plan">
+    <div class="num">33</div>
+    <div class="body">
+      <p class="situation">The capstone needs a ship-or-hold call with evidence.</p>
+      <p class="desc">Production kit &mdash; run card and preregistration record, evaluation card, release gate designer with a dated decision log, change impact worksheet, and monitoring plan builder.</p>
+      <p class="meta"><span class="tag planned">Planned</span><span>Week 6</span><span>AI PM</span><span>AI Engineer</span></p>
+    </div>
+  </div>
+
+  <footer>
+    <p>No agent CLI? The <a href="https://coachmanjeet.github.io/AI-Skills-Lab/">AI Skills Lab</a> covers the same muscles with no installs: Trace Analysis Builder, Rubric Builder, Automated Scoring Builder, Test Data Builder, and CI Scoring Builder.</p>
+    <p>Items marked Planned are not built yet. The instructor-only demo script (instructor trace viewer demo script) is not listed here; it is teaching material, not a student tool.</p>
+  </footer>
+</main>
+<script>
+(function () {
+  var chips = document.querySelectorAll('.chip');
+  var search = document.getElementById('search');
+  var count = document.getElementById('count');
+  var tools = Array.prototype.slice.call(document.querySelectorAll('.tool'));
+  var sections = Array.prototype.slice.call(document.querySelectorAll('[data-section]'));
+  var role = 'all';
+
+  function apply() {
+    var q = search.value.trim().toLowerCase();
+    var visible = 0;
+    tools.forEach(function (t) {
+      var roleOk = role === 'all' || t.getAttribute('data-roles').split(' ').indexOf(role) !== -1;
+      var textOk = !q || t.getAttribute('data-text').indexOf(q) !== -1;
+      var show = roleOk && textOk;
+      t.classList.toggle('hidden', !show);
+      if (show) visible += 1;
+    });
+    sections.forEach(function (s) {
+      var next = s.nextElementSibling;
+      var anyVisible = false;
+      while (next && !next.hasAttribute('data-section')) {
+        if (next.classList.contains('tool') && !next.classList.contains('hidden')) { anyVisible = true; break; }
+        next = next.nextElementSibling;
+      }
+      s.classList.toggle('hidden', !anyVisible);
+    });
+    count.textContent = visible + ' of ' + tools.length + ' tools shown';
+  }
+
+  chips.forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      role = chip.getAttribute('data-role');
+      chips.forEach(function (c) { c.setAttribute('aria-pressed', c === chip ? 'true' : 'false'); });
+      apply();
+    });
+  });
+  search.addEventListener('input', apply);
+  apply();
+})();
+</script>
+</body>
+</html>

@@ -17,6 +17,7 @@ You are the product manager for Pronto, a demo grocery delivery agent. Three tab
 | Folder | What it is |
 |--------|------------|
 | `hands-on-practice/` | The complete sample lab: one page, three tabs, reference answers included |
+| `tools/` | All 33 course tools in one index, filterable by role (AI PM, AI Engineer, Data Science and Research); three are free here, the rest are in the full course |
 | `tools/trace-viewer/` | Annotate agent traces in your browser, with a built-in Pronto sample |
 | `tools/judge-calibration-game/` | Calibrate your LLM judge against gold labels |
 | `syllabus.md` | The full 6-week syllabus: themes, topics, and what each week teaches |
