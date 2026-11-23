@@ -3,6 +3,12 @@
    export annotations as the seed of an eval dataset. */
 
 const LS_KEY = 'tv101:annotations';
+const LS_STEP_KEY = 'tv101:stepAnnotations';
+const STEP_TAGS = [
+  { value: 'decisive-error', label: 'Decisive error', short: 'decisive' },
+  { value: 'lock-in', label: 'Lock-in', short: 'lock-in' },
+  { value: 'first-signal', label: 'First signal', short: 'first signal' },
+];
 
 const FAILURE_MODES = [
   'wrong_order_status', 'refund_policy_misquote', 'over_refund',
@@ -29,6 +35,7 @@ const state = {
   selectedSpanId: null,
   collapsed: new Set(),          // spanIds collapsed in the tree
   annotations: loadAnnotations(),
+  stepAnnotations: loadStepAnnotations(),
   filters: { q: '', review: 'all', mode: 'all', errorsOnly: false },
 };
 
@@ -42,6 +49,62 @@ function loadAnnotations() {
 }
 function saveAnnotations() {
   try { localStorage.setItem(LS_KEY, JSON.stringify(state.annotations)); } catch {}
+}
+function loadStepAnnotations() {
+  try {
+    const raw = localStorage.getItem(LS_STEP_KEY);
+    const d = raw ? JSON.parse(raw) : {};
+    return (d && typeof d === 'object') ? d : {};
+  } catch { return {}; }
+}
+function saveStepAnnotations() {
+  try { localStorage.setItem(LS_STEP_KEY, JSON.stringify(state.stepAnnotations)); } catch {}
+}
+function stepTagFor(traceId, spanId) {
+  const byTrace = state.stepAnnotations[traceId];
+  return (byTrace && byTrace[spanId]) ? byTrace[spanId].tag : null;
+}
+function stepTagBadge(traceId, spanId) {
+  const tag = stepTagFor(traceId, spanId);
+  if (!tag) return '';
+  const def = STEP_TAGS.find(t => t.value === tag);
+  const label = def ? def.short : tag;
+  return `<span class="tv-badge tv-badge--step tv-badge--step-${esc(tag)}">${esc(label)}</span>`;
+}
+function stepAnnotationRows() {
+  const rows = [];
+  for (const t of state.traces) {
+    const byTrace = state.stepAnnotations[t.traceId] || {};
+    const nodes = [...t.nodes].sort((a, b) => (a.startMs ?? 0) - (b.startMs ?? 0));
+    for (const n of nodes) {
+      const tag = byTrace[n.spanId];
+      if (tag) rows.push({ traceId: t.traceId, spanId: n.spanId, tag: tag.tag, ts: tag.ts });
+    }
+  }
+  return rows;
+}
+function setStepTag(tag) {
+  const traceId = state.selectedTraceId, spanId = state.selectedSpanId;
+  if (!traceId || !spanId) return;
+  if (!state.stepAnnotations[traceId]) state.stepAnnotations[traceId] = {};
+  state.stepAnnotations[traceId][spanId] = { tag, ts: new Date().toISOString() };
+  saveStepAnnotations();
+  renderTree();
+  renderDetail();
+  updateProgress();
+}
+function clearStepTag() {
+  const traceId = state.selectedTraceId, spanId = state.selectedSpanId;
+  if (!traceId || !spanId) return;
+  const byTrace = state.stepAnnotations[traceId];
+  if (byTrace && byTrace[spanId]) {
+    delete byTrace[spanId];
+    if (!Object.keys(byTrace).length) delete state.stepAnnotations[traceId];
+    saveStepAnnotations();
+    renderTree();
+    renderDetail();
+    updateProgress();
+  }
 }
 
 /* ---------------- OTel parsing (liberal) ---------------- */
@@ -309,6 +372,7 @@ function renderTree() {
         <button class="tv-caret${hasKids ? '' : ' tv-caret--leaf'}" data-caret="${esc(node.spanId)}" aria-label="toggle">▾</button>
         <span class="tv-span__dot"></span>
         <span class="tv-span__name">${esc(node.name)}</span>
+        ${stepTagBadge(trace.traceId, node.spanId)}
       </div>
       <div class="tv-bar"><div class="tv-bar__fill" style="${barStyle(trace, node)}"></div></div>
       <div class="tv-span__dur">${fmtDur(node.durationMs)}</div>
@@ -352,7 +416,16 @@ function renderDetail() {
   const st = node.status || {};
   const stLabel = st.code === 2 || st.code === 'ERROR' ? '<span class="tv-badge tv-badge--err">error</span>'
     : st.code === 1 || st.code === 'OK' ? '<span class="tv-badge tv-badge--ok">ok</span>' : MISSING;
+  const curTag = stepTagFor(trace.traceId, node.spanId);
+  const curDef = STEP_TAGS.find(t => t.value === curTag);
   mount.innerHTML = `
+    <div class="tv-detail__sec"><h4>Step tag</h4>
+      <div class="tv-steptags" data-role="step-tags">
+        ${STEP_TAGS.map(t => `<button class="tv-btn tv-steptag${curTag === t.value ? ' is-active' : ''}" data-steptag="${t.value}">${t.label}</button>`).join('')}
+        <button class="tv-btn tv-btn--ghost tv-steptag" data-steptag="">Clear</button>
+      </div>
+      <div class="tv-steptags__hint">${curDef ? 'Tagged as ' + curDef.label + '.' : 'Tag this span as the decisive error, the lock-in, or the first signal. One tag per span.'}</div>
+    </div>
     <div class="tv-detail__sec"><h4>Span</h4>
       <dl class="tv-kv">
         <dt>name</dt><dd>${esc(node.name)}</dd>
@@ -409,6 +482,7 @@ function updateProgress() {
   const hasAny = done > 0;
   $('[data-role="export-json"]').disabled = !hasAny;
   $('[data-role="export-csv"]').disabled = !hasAny;
+  $('[data-role="export-steps"]').disabled = stepAnnotationRows().length === 0;
 }
 
 /* ---------------- export ---------------- */
@@ -426,6 +500,9 @@ function exportCSV() {
   const csv = ['trace_id,failure_mode,note,timestamp',
     ...rows.map(r => [q(r.traceId), q(r.failure_mode || ''), q(r.note || ''), q(r.ts || '')].join(','))].join('\n');
   download('trace-annotations.csv', csv, 'text/csv');
+}
+function exportStepJSON() {
+  download('step-annotations.json', JSON.stringify(stepAnnotationRows(), null, 2), 'application/json');
 }
 
 /* ---------------- load / errors ---------------- */
@@ -571,9 +648,18 @@ function init() {
   // export
   $('[data-role="export-json"]').addEventListener('click', exportJSON);
   $('[data-role="export-csv"]').addEventListener('click', exportCSV);
+  $('[data-role="export-steps"]').addEventListener('click', exportStepJSON);
+
+  // step-tag buttons in the span detail panel (delegated: detail re-renders)
+  $('[data-role="span-detail"]').addEventListener('click', e => {
+    const btn = e.target.closest('[data-steptag]');
+    if (!btn) return;
+    const tag = btn.dataset.steptag;
+    if (tag) setStepTag(tag); else clearStepTag();
+  });
 
   // expose a few internals for automated tests
-  window.__tv = { state, parseUpload, setData, filteredTraces, annotationRows };
+  window.__tv = { state, parseUpload, setData, filteredTraces, annotationRows, stepAnnotationRows, setStepTag, clearStepTag };
 }
 
 init();

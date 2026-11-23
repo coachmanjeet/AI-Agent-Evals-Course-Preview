@@ -21,7 +21,6 @@ trace.
 
 `https://coachmanjeet.github.io/AI-Agent-Evals-Course-Preview/tools/trace-viewer/`
 
-
 ## What it accepts
 
 Be liberal in what you read — any of:
@@ -60,6 +59,15 @@ error naming exactly what was expected.
 5. **Export JSON/CSV** — 📦 these annotations are the seed of your eval
    dataset: each labeled trace becomes a gold example for the evals you build
    next (Week 2+).
+
+## Step tags (Week 5 lab)
+
+Click a span and tag it **Decisive error**, **Lock-in**, or **First signal**
+(one tag per span; Clear removes it). Tags show as badges in the waterfall,
+auto-save in your browser (`localStorage`, keyed by trace ID), and export
+separately with **Export step tags** as `step-annotations.json`
+(`traceId`, `spanId`, `tag`, `ts`). Trace-level annotations above are
+untouched: the two exports are separate files.
 
 ## Files
 

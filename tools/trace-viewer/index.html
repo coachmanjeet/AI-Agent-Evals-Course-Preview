@@ -89,6 +89,15 @@ body.tv-body {
 .tv-badge--ok { background: var(--tv-green-soft); color: var(--tv-green); }
 .tv-badge--mode { background: var(--tv-amber-soft); color: var(--tv-amber); }
 .tv-badge--reviewed { background: var(--tv-accent-soft); color: var(--tv-accent-dark); }
+.tv-badge--step { background: var(--tv-accent-soft); color: var(--tv-accent-dark); }
+.tv-badge--step-decisive-error { background: var(--tv-red-soft); color: var(--tv-red); }
+.tv-badge--step-lock-in { background: var(--tv-amber-soft); color: var(--tv-amber); }
+.tv-badge--step-first-signal { background: var(--tv-accent-soft); color: var(--tv-accent-dark); }
+/* ---------- Step tags (Week 5 lab) ---------- */
+.tv-steptags { display: flex; gap: 8px; flex-wrap: wrap; }
+.tv-steptag { padding: 6px 12px; border: 1px solid var(--tv-border); background: #fff; color: var(--tv-ink-2); }
+.tv-steptag.is-active { background: var(--tv-accent-dark); color: #fff; border-color: var(--tv-accent-dark); }
+.tv-steptags__hint { font-size: 12px; color: var(--tv-ink-3); margin-top: 8px; }
 .tv-empty { padding: 28px 16px; text-align: center; color: var(--tv-ink-3); font-size: 13px; }
 /* ---------- Span tree ---------- */
 .tv-tracehead { padding: 12px 16px; border-bottom: 1px solid var(--tv-border); }
@@ -159,7 +168,7 @@ body.tv-body {
 
   <header class="tv-topbar">
     <div class="tv-topbar__inner">
-      <a class="tv-topbar__back" href="https://github.com/coachmanjeet/AI-Agent-Evals-Course-Preview">← Back to AI-Agent-Evals-Course-Preview</a>
+      <a class="tv-topbar__back" href="https://github.com/coachmanjeet/AI-Agent-Evals-Course">← Back to AI-Agent-Evals-Course</a>
       <div class="tv-topbar__title">
         <span class="tv-topbar__eyebrow">Week 1 · Tool</span>
         <span class="tv-topbar__name">Trace Viewer</span>
@@ -169,6 +178,7 @@ body.tv-body {
         <button class="tv-btn tv-btn--ghost" data-role="load-sample">Load sample</button>
         <button class="tv-btn tv-btn--ghost" data-role="export-json" disabled>Export JSON</button>
         <button class="tv-btn tv-btn--ghost" data-role="export-csv" disabled>Export CSV</button>
+        <button class="tv-btn tv-btn--ghost" data-role="export-steps" disabled>Export step tags</button>
         <button class="tv-btn tv-btn--primary" data-role="upload-btn">Upload traces</button>
         <input type="file" class="tv-hidden" data-role="file-input" accept=".json,application/json">
       </div>
