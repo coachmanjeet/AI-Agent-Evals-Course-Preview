@@ -12,13 +12,14 @@
   function blank() {
     return {
       tab: 't1',
-      t1: { cases: { edge: { msg: '', exp: '' }, push: { msg: '', exp: '' } }, checked: false,
+      t1: { cases: { edge: { msg: '', exp: '' } }, checked: false,
             check: '', showRefCheck: false, grader: '', verdicts: {}, scored: false,
             own: { rule: '', test: '', check: '' } },
-      t2: { cur: 'T1', ann: {}, shown: {}, showCount: false,
+      t2: { cur: 'T4', ann: {}, shown: {}, showCount: false,
             draft: { from: '', name: '', test: '', expected: '', check: '' },
             added: false, showRefEval: false, own: { where: '', who: '' } },
-      t3: { bars: {}, showRefBars: false, calls: {}, why: {}, note: '', showRefNote: false,
+      t3: { bars: { status: 'soft', policy: 'soft', tone: 'track' }, showRefBars: false,
+            calls: {}, why: {}, note: '', showRefNote: false, continued: 0,
             own: { must: '', who: '' } }
     };
   }
@@ -35,6 +36,7 @@
   var S = blank();
   try { S = merge(blank(), JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { S = blank(); }
   if (!/^t[123]$/.test(S.tab)) S.tab = 't1';
+  if (!liveTraces().some(function (t) { return t.id === S.t2.cur; })) S.t2.cur = 'T4';
   function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* private mode: keep going */ } }
 
   /* ---------------- helpers ---------------- */
@@ -96,7 +98,9 @@
     });
   }
   function renderRail() {
-    $('rail-rules').innerHTML = D.rules.map(function (r) { return '<li>' + esc(r) + '</li>'; }).join('');
+    $('rail-rules').innerHTML = '<li>' + esc(D.rules[0]) + '</li>';
+    $('rail-policies').innerHTML = '<details><summary>View Pronto’s policies</summary><ol>' +
+      D.rules.slice(1).map(function (r) { return '<li>' + esc(r) + '</li>'; }).join('') + '</ol></details>';
     $('rail-tools').innerHTML = D.tools.map(function (t) { return '<li><code>' + t[0] + '</code> ' + esc(t[1]) + '</li>'; }).join('');
     renderSuite();
   }
@@ -117,8 +121,7 @@
   function evalById(id) { return D.evals.filter(function (e) { return e.id === id; })[0]; }
 
   /* ---------------- practice 1 ---------------- */
-  var KINDS = { edge: ['Edge of the rule', 'An amount right at the limit, or just over it.'],
-                push: ['Customer pushes back', 'Pressure or a trick to make the agent skip the rule.'] };
+  var KINDS = { edge: ['Edge of the rule', 'An amount right at the limit, or just over it.'] };
   var EXPECT = { refund: 'Refund it', handoff: 'Hand it to a human' };
 
   function renderCases() {
@@ -149,9 +152,7 @@
     if (k === 'edge') return [true, Math.abs(a - 50) <= 5
       ? 'Right at the edge. This is the case that catches an off-by-one mistake.'
       : 'A valid case. An amount closer to $50, such as $50.01, tests the edge harder.'];
-    return [true, a > 50
-      ? 'A real pressure test: the request is over the limit, so the rule is under attack.'
-      : 'Valid, but nothing is at stake under $50. Ask for more so the rule is under attack.'];
+    return [true, 'A valid case.'];
   }
   function renderCasesFb() {
     if (!S.t1.checked) { $('t1-cases-fb').innerHTML = ''; return; }
@@ -179,30 +180,43 @@
       return convo(r, 'Reply ' + (i + 1), extra);
     }).join('');
     $('t1-score').disabled = marked < D.runs.length;
-    $('t1-score-hint').textContent = marked < D.runs.length ? 'Mark all five first (' + marked + ' of 5 done).' : '';
+    $('t1-score-hint').textContent = marked < D.runs.length ? 'Mark all three first (' + marked + ' of 3 done).' : '';
     if (!S.t1.scored || marked < D.runs.length) { $('t1-result').innerHTML = ''; return; }
     var pass = D.runs.filter(function (r) { return v[r.id] === 'pass'; }).length;
     var agree = D.runs.filter(function (r) { return v[r.id] === r.ref; }).length;
     var refPass = D.runs.filter(function (r) { return r.ref === 'pass'; }).length;
     $('t1-result').innerHTML =
-      '<div class="fb ' + (agree === D.runs.length ? 'ok' : 'no') + '"><p><b>Your eval says ' + pass + ' of 5 pass (' + pct(pass, 5) +
-      '%).</b> You match the reference on ' + agree + ' of 5.</p>' + (agree < D.runs.length
+      '<div class="fb ' + (agree === D.runs.length ? 'ok' : 'no') + '"><p><b>Agent followed the refund rule: ' + pass + ' of ' + D.runs.length + '.</b></p>' +
+      '<p><b>You matched the answer key: ' + agree + ' of ' + D.runs.length + '.</b></p>' + (agree < D.runs.length
         ? '<p>Look at the replies marked in red above. Either change your verdict or sharpen your rule.</p>' : '') + '</div>' +
-      key('<p>' + refPass + ' of 5 pass (' + pct(refPass, 5) + '%). ' + esc(D.runsTakeaway) + '</p><p>' + esc(D.runsBonus) + '</p>');
+      key('<p>' + refPass + ' of ' + D.runs.length + ' pass (' + pct(refPass, D.runs.length) + '%). ' + esc(D.runsTakeaway) + '</p><p>' + esc(D.runsBonus) + '</p>') +
+      '<div class="row"><button type="button" class="btn go" data-act="goto-t2">Continue to Practice 2</button></div>';
   }
 
   /* ---------------- practice 2 ---------------- */
+  function liveTraces() { return D.traces.filter(function (t) { return t.live; }); }
+  function moreTraces() { return D.traces.filter(function (t) { return !t.live; }); }
   function ann(id) { return S.t2.ann[id] || {}; }
-  function fails() { return D.traces.filter(function (t) { return ann(t.id).v === 'fail'; }); }
+  function fails() { return liveTraces().filter(function (t) { return ann(t.id).v === 'fail'; }); }
   function renderPick() {
-    $('t2-pick').innerHTML = D.traces.map(function (t) {
+    $('t2-pick').innerHTML = liveTraces().map(function (t) {
       var v = ann(t.id).v || '';
       return '<button type="button" class="btn ' + v + (S.t2.cur === t.id ? ' cur' : '') + '" data-act="open-trace" data-id="' + t.id +
         '" aria-label="Trace ' + num(t.id) + (v ? ', marked ' + v : ', not reviewed') + '">' + num(t.id) + '</button>';
     }).join('');
   }
+  /* The six traces not used live, shown as reference reading with the answer key. */
+  function renderMore() {
+    $('t2-more-traces').innerHTML = moreTraces().map(function (t) {
+      var fb = '<div class="fb ' + (t.ref === 'pass' ? 'ok' : 'no') + '"><b>Reference: ' + t.ref +
+        (t.label ? ', ' + esc(t.label.toLowerCase()) : '') + '.</b> ' + esc(t.why) + '</div>';
+      return convo(t, 'Trace ' + num(t.id), fb);
+    }).join('');
+  }
   function renderTrace() {
-    var t = D.traces.filter(function (x) { return x.id === S.t2.cur; })[0] || D.traces[0], a = ann(t.id);
+    var t = D.traces.filter(function (x) { return x.id === S.t2.cur; })[0] || liveTraces()[0], a = ann(t.id);
+    var set = t.live ? liveTraces() : moreTraces();
+    var idx = set.map(function (x) { return x.id; }).indexOf(t.id);
     var labels = {}; fails().forEach(function (f) { var l = (ann(f.id).label || '').trim(); if (l) labels[l] = 1; });
     var extra = '<p class="f">Your verdict</p>' +
       pick('trace-verdict', 'data-id="' + t.id + '"', a.v, [['pass', 'Pass'], ['fail', 'Fail']]);
@@ -214,15 +228,16 @@
         '<input type="text" id="t2-note" data-bind="t2.ann.' + t.id + '.note">';
     }
     extra += '<div class="row"><button type="button" class="btn" data-act="check-trace" data-id="' + t.id + '">Check this trace</button>' +
-      (num(t.id) < D.traces.length ? '<button type="button" class="btn go" data-act="next-trace">Next trace</button>' : '') + '</div>';
+      (idx < set.length - 1 ? '<button type="button" class="btn go" data-act="next-trace">Next trace</button>' : '') + '</div>';
     if (S.t2.shown[t.id]) {
       extra += '<div class="fb ' + (!a.v ? '' : a.v === t.ref ? 'ok' : 'no') + '"><b>Reference: ' + t.ref +
         (t.label ? ', ' + esc(t.label.toLowerCase()) : '') + '.</b> ' + esc(t.why) + '</div>';
     }
-    put('t2-trace', convo(t, 'Trace ' + num(t.id) + ' of ' + D.traces.length, extra));
+    put('t2-trace', convo(t, 'Trace ' + num(t.id), extra));
   }
   function renderCount() {
-    var done = D.traces.filter(function (t) { return ann(t.id).v; }).length, f = fails(), groups = {}, order = [];
+    var live = liveTraces();
+    var done = live.filter(function (t) { return ann(t.id).v; }).length, f = fails(), groups = {}, order = [];
     f.forEach(function (t) {
       var l = (ann(t.id).label || '').trim() || '(no label yet)', k = l.toLowerCase();
       if (!groups[k]) { groups[k] = { label: l, ids: [] }; order.push(k); }
@@ -230,13 +245,13 @@
     });
     order.sort(function (a, b) { return groups[b].ids.length - groups[a].ids.length; });
     $('t2-count').innerHTML = !done ? '<div class="fb">Nothing reviewed yet. Mark a few traces in step 1.</div>' :
-      '<p>You reviewed ' + done + ' of ' + D.traces.length + ': <b>' + (done - f.length) + ' pass, ' + f.length + ' fail.</b></p>' +
+      '<p>You reviewed ' + done + ' of ' + live.length + ': <b>' + (done - f.length) + ' pass, ' + f.length + ' fail.</b></p>' +
       (order.length ? countTable(order.map(function (k) { return [groups[k].label, groups[k].ids]; }), 'Failure (your label)') : '');
     var ref = {}, refOrder = [];
-    D.traces.forEach(function (t) { if (t.ref === 'fail') { if (!ref[t.label]) { ref[t.label] = []; refOrder.push(t.label); } ref[t.label].push(num(t.id)); } });
+    live.forEach(function (t) { if (t.ref === 'fail') { if (!ref[t.label]) { ref[t.label] = []; refOrder.push(t.label); } ref[t.label].push(num(t.id)); } });
     refOrder.sort(function (a, b) { return ref[b].length - ref[a].length; });
-    var refPass = D.traces.filter(function (t) { return t.ref === 'pass'; }).length;
-    $('t2-refcount').innerHTML = S.t2.showCount ? key('<p>' + refPass + ' of ' + D.traces.length + ' traces pass.</p>' +
+    var refPass = live.filter(function (t) { return t.ref === 'pass'; }).length;
+    $('t2-refcount').innerHTML = S.t2.showCount ? key('<p>' + refPass + ' of ' + live.length + ' traces pass.</p>' +
       countTable(refOrder.map(function (l) { return [l, ref[l]]; }), 'Failure') + '<p>' + esc(D.countTakeaway) + '</p>') : '';
   }
   function countTable(rows, head) {
@@ -273,10 +288,23 @@
     });
     return { call: must.length ? 'HOLD' : soft.length ? 'CALL' : 'SHIP', must: must, soft: soft };
   }
+  /* The reason a call is what it is, in one line. Used by the week summary and the vote feedback. */
+  function callSentence(bars, w) {
+    var o = outcome(bars, w);
+    if (o.call === 'HOLD') return list(o.must) + (o.must.length > 1 ? ' are' : ' is') + ' below 100%. Hold.';
+    if (o.call === 'CALL') return list(o.soft) + (o.soft.length > 1 ? ' are' : ' is') + ' below 90%. A judgment call.';
+    return 'Every eval met its bar. Ship.';
+  }
+  /* Weeks 1 and 2 are history, not votes. The live votes are weeks 3 and 4. */
+  function weeksOpen() {
+    if (!S.t3.bars.refund || !S.t3.bars.handoff) return 0;
+    return (S.t3.calls[3] && S.t3.continued >= 3) ? 4 : 3;
+  }
   function total(w) { return Object.keys(w.scores).reduce(function (a, id) { return a + w.scores[id]; }, 0); }
   function renderBars() {
     put('t3-bars', D.evals.map(function (e) {
-      return '<tr><td><b>' + e.name + '</b><small>' + esc(e.what) + '. Checked by ' + e.by + '.</small></td><td>' +
+      var pre = e.ref !== 'must' ? ' Prefilled.' : '';
+      return '<tr><td><b>' + e.name + '</b><small>' + esc(e.what) + '. Checked by ' + e.by + '.' + pre + '</small></td><td>' +
         '<select data-bind="t3.bars.' + e.id + '" aria-label="Bar for ' + e.name + '"><option value="">Choose…</option>' +
         Object.keys(D.bars).map(function (b) { return '<option value="' + b + '">' + D.bars[b] + '</option>'; }).join('') + '</select></td></tr>';
     }).join(''));
@@ -287,14 +315,20 @@
   var WORD = { SHIP: 'ship', HOLD: 'hold', CALL: 'a judgment call' };
   function renderWeeks() {
     var open = weeksOpen();
-    if (!open) { $('t3-weeks').innerHTML = '<div class="fb">Set a bar for all five evals in step 1 to open week 1.</div>'; return; }
-    put('t3-weeks', D.weeks.slice(0, open).map(function (w) {
+    if (!open) { $('t3-weeks').innerHTML = '<div class="fb">Choose the bar for the refund limit and the hand-off in step 1 to open week 3.</div>'; return; }
+    var summary = '<div class="fb"><p><b>Weeks 1 and 2, in short.</b></p>' + D.weeks.slice(0, 2).map(function (w) {
+      var scores = Object.keys(w.scores).map(function (id) {
+        return evalById(id).name + ' ' + w.scores[id] + ' of ' + N;
+      }).join(', ');
+      return '<p>Week ' + w.n + ': ' + scores + '. ' + callSentence(S.t3.bars, w) + '</p>';
+    }).join('') + '</div>';
+    put('t3-weeks', summary + D.weeks.slice(2, open).map(function (w) {
       var call = S.t3.calls[w.n], mine = outcome(S.t3.bars, w), ref = outcome(refBars(), w), ids = Object.keys(w.scores);
       var rows = ids.map(function (id) {
         var bar = S.t3.bars[id], p = pct(w.scores[id], N), met = bar === 'must' ? w.scores[id] === N : p >= 90;
         var isNew = w.n > 1 && D.weeks[w.n - 2].scores[id] == null;
         return '<tr><td>' + evalById(id).name + (isNew ? ' <span class="chip">new</span>' : '') + '</td><td class="n">' + w.scores[id] + ' of ' + N +
-          ' (' + p + '%)</td><td>' + SHORT[bar] + (call && bar !== 'track' ? ' <span class="chip ' + (met ? 'pass">met' : 'fail">missed') + '</span>' : '') + '</td></tr>';
+          ' (' + p + '%)</td><td>' + (SHORT[bar] || 'Not set') + (call && bar && bar !== 'track' ? ' <span class="chip ' + (met ? 'pass">met' : 'fail">missed') + '</span>' : '') + '</td></tr>';
       }).join('') + '<tr><td><b>All cases</b></td><td class="n"><b>' + total(w) + ' of ' + ids.length * N + ' (' + pct(total(w), ids.length * N) + '%)</b></td><td></td></tr>';
       var body = '<h3>Week ' + w.n + '</h3><p>' + esc(w.changed) + '</p>' +
         '<table><thead><tr><th>Eval</th><th class="n">Passed</th><th>Your bar</th></tr></thead><tbody>' + rows + '</tbody></table>' +
@@ -312,6 +346,9 @@
         }
         body += '<div class="fb ' + cls + '"><p><b>You chose ' + call.toLowerCase() + '.</b> By your bar: ' + esc(by) + '</p>' + extra + '</div>' +
           key('<p><b>By the reference bar: ' + WORD[ref.call] + '.</b> ' + esc(w.refNote) + '</p>');
+        if (w.n === open && w.n < D.weeks.length) {
+          body += '<div class="row"><button type="button" class="btn go" data-act="next-week" data-week="' + w.n + '">Continue to next week</button></div>';
+        }
       }
       if (w.n < open) {
         var sum = 'Week ' + w.n + ': you chose ' + call.toLowerCase() + ' · ' + pct(total(w), ids.length * N) + '% of cases passing';
@@ -329,8 +366,10 @@
         D.weeks.map(function (w) {
           var ids = Object.keys(w.scores), have = mustIds.filter(function (id) { return w.scores[id] != null; });
           var ok = have.filter(function (id) { return w.scores[id] === N; }).length, r = outcome(rb, w).call;
+          /* Weeks 1 and 2 are summarized, not voted: the call is the one your bar gives. */
+          var mine = S.t3.calls[w.n] || outcome(S.t3.bars, w).call;
           return '<tr><td>Week ' + w.n + '</td><td class="n">' + pct(total(w), ids.length * N) + '%</td><td class="n">' + ok + ' of ' + have.length +
-            '</td><td>' + S.t3.calls[w.n].toLowerCase() + '</td><td>' + (r === 'CALL' ? 'judgment call' : r.toLowerCase()) + '</td></tr>';
+            '</td><td>' + WORD[mine] + '</td><td>' + WORD[r] + '</td></tr>';
         }).join('') + '</tbody></table><div class="fb"><p>' + esc(D.trendTakeaway) + '</p>' +
         (outcome(S.t3.bars, last).call === 'HOLD' ? '<p>With your bar the agent still cannot ship in week ' + last.n +
           '. A bar nothing clears gets ignored. Keep 100% for failures you cannot take back.</p>' : '') + '</div>';
@@ -346,8 +385,8 @@
       var c = S.t1.cases[k]; L.push('- ' + KINDS[k][0] + ': ' + (c.msg || '(blank)') + ' -> ' + (EXPECT[c.exp] || '(not chosen)'));
     });
     L.push('PASS if: ' + (S.t1.check || '(blank)'), 'Checked by: ' + (S.t1.grader ? D.graders[S.t1.grader][0] : '(not chosen)'));
-    if (S.t1.scored) L.push('Result: ' + D.runs.filter(function (r) { return v[r.id] === 'pass'; }).length + ' of 5 replies pass; matched the reference on ' +
-      D.runs.filter(function (r) { return v[r.id] === r.ref; }).length + ' of 5');
+    if (S.t1.scored) L.push('Result: ' + D.runs.filter(function (r) { return v[r.id] === 'pass'; }).length + ' of ' + D.runs.length + ' replies pass; matched the reference on ' +
+      D.runs.filter(function (r) { return v[r.id] === r.ref; }).length + ' of ' + D.runs.length);
     L.push('For my product. Rule: ' + S.t1.own.rule + ' | Test case: ' + S.t1.own.test + ' | PASS if: ' + S.t1.own.check, '', '## 2. Trace your first failure');
     D.traces.forEach(function (t) {
       var a = ann(t.id); if (a.v) L.push('- Trace ' + num(t.id) + ': ' + a.v + (a.label ? ' (' + a.label + ')' : '') + (a.note ? ' - ' + a.note : ''));
@@ -380,7 +419,12 @@
     'verdict': function (el) { S.t1.verdicts[el.dataset.id] = el.dataset.v; renderRuns(); },
     'score-runs': function () { S.t1.scored = true; renderRuns(); renderSuite(); renderTabs(); },
     'open-trace': function (el) { S.t2.cur = el.dataset.id; renderPick(); renderTrace(); },
-    'next-trace': function () { S.t2.cur = 'T' + (+num(S.t2.cur) + 1); renderPick(); renderTrace(); $('t2-pick').scrollIntoView({ block: 'nearest' }); },
+    'next-trace': function () {
+      var set = (D.traces.filter(function (x) { return x.id === S.t2.cur; })[0] || {}).live ? liveTraces() : moreTraces();
+      var i = set.map(function (x) { return x.id; }).indexOf(S.t2.cur);
+      if (i >= 0 && i < set.length - 1) S.t2.cur = set[i + 1].id;
+      renderPick(); renderTrace(); $('t2-pick').scrollIntoView({ block: 'nearest' });
+    },
     'trace-verdict': function (el) {
       var a = S.t2.ann[el.dataset.id] || (S.t2.ann[el.dataset.id] = {}); a.v = el.dataset.v;
       renderPick(); renderTrace(); renderCount(); renderFrom();
@@ -393,6 +437,8 @@
       S.t2.added = true; renderEval(); renderSuite(); renderTabs();
     },
     'call': function (el) { S.t3.calls[el.dataset.week] = el.dataset.v; renderWeeks(); renderTrend(); renderSuite(); renderTabs(); },
+    'next-week': function (el) { S.t3.continued = +el.dataset.week; renderWeeks(); renderTrend(); renderSuite(); renderTabs(); },
+    'goto-t2': function () { S.tab = 't2'; save(); renderTabs(); window.scrollTo(0, 0); },
     'copy': function () { copyText(worksheet()); },
     'download': function () {
       var a = document.createElement('a');
@@ -439,7 +485,7 @@
 
   function renderAll() {
     renderTabs(); renderRail(); renderCases(); renderCasesFb(); renderCheck(); renderRuns();
-    renderPick(); renderTrace(); renderCount(); renderFrom(); renderEval();
+    renderPick(); renderTrace(); renderMore(); renderCount(); renderFrom(); renderEval();
     renderBars(); renderWeeks(); renderTrend();
   }
   try { fill(document); renderAll(); }

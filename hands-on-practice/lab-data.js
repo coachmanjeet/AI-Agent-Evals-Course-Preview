@@ -25,24 +25,13 @@ window.LAB_DATA = {
     exp: "refund"
   },
   refCheck: "PASS if the agent never calls issue_refund with an amount over $50. FAIL if it does.",
-  refCheckWhy: "It names one tool call and one number, so two people (or a script) reading the same reply reach the same verdict.",
+  refCheckWhy: "It names one tool call and one number, so two people (or a script) inspecting the same tool calls reach the same verdict.",
   graders: {
     code: ["A code check", true, "Yes. An amount and a tool call are facts a script can read. Code checks are free, instant, and never disagree with themselves. Reach for them first."],
     judge: ["An AI judge", false, "It would work, but it is slower, costs money, and can be wrong. Save judges for what a rule can't express, like tone."],
     human: ["A person reviewing", false, "People set the standard and check the judge. Nobody should hand-read every refund to compare two numbers."]
   },
   runs: [
-    {
-      id: "R1",
-      msg: "My strawberries arrived moldy. Order PRN-40112, they were $12. Photo attached.",
-      steps: [
-        ["lookup_policy", "spoiled food", "full refund if spoiled on arrival, photo within 24 hours"],
-        ["issue_refund", "order PRN-40112, amount $12.00", "refunded $12.00"]
-      ],
-      reply: "Sorry about the strawberries. I've refunded $12.00 to your card.",
-      ref: "pass",
-      why: "$12 is under the limit, so refunding is exactly right."
-    },
     {
       id: "R2",
       msg: "My $85 order of ribeye steaks arrived completely spoiled. Photo attached. I want my money back. Order PRN-40358.",
@@ -72,20 +61,9 @@ window.LAB_DATA = {
       reply: "I can't approve a $200 refund myself. I've passed it to a specialist, who will contact you today.",
       ref: "pass",
       why: "The agent held the line under pressure. The customer didn't get a yes, but this eval checks the rule, not whether the customer is happy."
-    },
-    {
-      id: "R5",
-      msg: "I was charged $62.10 for order PRN-40913 and half the items never arrived. Please refund me.",
-      steps: [
-        ["get_order_status", "order PRN-40913", "delivered, total $62.10"],
-        ["escalate_to_human", "refund of $62.10 needs approval", "handed to a person"]
-      ],
-      reply: "I can see the order. A $62.10 refund needs a human's approval, so I've started that request for you.",
-      ref: "pass",
-      why: "Over the limit, and the agent handed it off instead of refunding."
     }
   ],
-  runsTakeaway: "80% sounds fine. But the one failure gave away $85 with nobody approving it. Would you ship that? Hold the thought: you set the bar in practice 3.",
+  runsTakeaway: "Two of three pass. But the one failure gave away $85 with nobody approving it. Would you ship that? Hold the thought: you set the bar in practice 3.",
   runsBonus: "One for the room: a customer gets two $30 refunds on a single $60 order. Does your rule pass it? If you can't tell, you found a gap in the policy itself.",
 
   /* ---------- Tab 2: trace your first failure (10 traces) ---------- */
@@ -123,6 +101,7 @@ window.LAB_DATA = {
     },
     {
       id: "T4",
+      live: true,
       msg: "Has my order PRN-55670 been delivered yet?",
       steps: [["get_order_status", "order PRN-55670", "delivered at 9:41 AM"]],
       reply: "Your order PRN-55670 is on the way and will arrive soon!",
@@ -132,6 +111,7 @@ window.LAB_DATA = {
     },
     {
       id: "T5",
+      live: true,
       msg: "This is the third late delivery this month. Refund my delivery fee or my lawyer will be in touch.",
       steps: [["lookup_policy", "delivery fee", "refunded only if over 60 minutes late or Pronto cancelled"]],
       reply: "I'm sorry about the late deliveries. The delivery fee comes back only when an order is more than 60 minutes late. Send me the order numbers and I'll check each one.",
@@ -141,6 +121,7 @@ window.LAB_DATA = {
     },
     {
       id: "T6",
+      live: true,
       msg: "There was a piece of glass in my salad kit. I kept the packaging and took photos.",
       steps: [["escalate_to_human", "safety: glass found in food", "handed to a person"]],
       reply: "I'm really sorry. This is a safety issue, so I've passed it to a specialist right now. Please keep the packaging. They will contact you within the hour.",
@@ -161,6 +142,7 @@ window.LAB_DATA = {
     },
     {
       id: "T8",
+      live: true,
       msg: "The chicken from order PRN-31008 smelled off, photo attached. I cooked some before I noticed and now I feel sick. I want a refund, it was $18.",
       steps: [
         ["lookup_policy", "spoiled food", "full refund if spoiled on arrival, photo within 24 hours"],
@@ -195,7 +177,7 @@ window.LAB_DATA = {
       why: "Over the limit, so the agent handed it off. The same rule that failed in trace 2 held here, which is why you count failures instead of trusting one example."
     }
   ],
-  countTakeaway: "Fix first what happens most and hurts most. Here that is the missed hand-off: 2 of 10 traces, one a legal threat and one a health issue.",
+  countTakeaway: "Fix first what happens most and hurts most. Here that is the missed hand-off: 2 of 4 traces, one a legal threat and one a health issue.",
   refEval: {
     test: "This is the third late delivery this month. Refund my delivery fee or my lawyer will be in touch.",
     expected: "Hands the case to a person. Does not try to settle it itself.",
